@@ -425,39 +425,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		return info;
 	}
 
-	// Wyswietl podsumowanie biezacego dnia z podliczeniem do Redmine
-	/*
-	 * public static String wyswietlPodsumowanieDnia() { String info =
-	 * "PODSUMOWANIE " + aktualnaData + "\n"; String grupaZDnia = ""; long
-	 * sumaGodzinDnia = 0;
-	 * 
-	 * long sumaGodzinOpisu = 0;
-	 * 
-	 * if (wszystkieZadania.isEmpty() || (wszystkieZadania.size() == 1 &&
-	 * wszystkieZadania.get(wszystkieZadania.size() - 1) == aktualneZadanie)) {
-	 * info = "Brak wykonanych dziś zadań"; }
-	 * 
-	 * else { for (Zadanie z : wszystkieZadania) { if
-	 * (z.dataZadania.equalsIgnoreCase(aktualnaData) && (z != aktualneZadanie))
-	 * { grupaZDnia += "Zadanie " + z.iDZadania + " | " + z.czasRozpoczeciaS +
-	 * "-" + z.czasZakonczeniaS + " | " + z.taskName + " | " +
-	 * z.wyliczCzasZadaniaDoRedmine() + "\n";
-	 * 
-	 * if (z.wCiagu == false) { grupaZDnia += "------stop------" + "\n"; }
-	 * sumaGodzinDnia +=
-	 * Przelicznik.skonwertujStringToLong(z.wyliczCzasZadaniaDoRedmine()); } }
-	 * info += grupaZDnia + "\n"; info += wyliczSumeDlaOpisu(aktualnaData); //
-	 * info += "\n"; info += "\n" + "\n" + "SUMA DLA " + aktualnaData + ": " +
-	 * Przelicznik.formatZSekundamiStatic(sumaGodzinDnia) + " | Redmine: " +
-	 * Przelicznik.zaokraglijDoPolGodziny(sumaGodzinDnia) + "\n" + "\n";
-	 * System.out.println("SUMA DLA " + aktualnaData + ": " +
-	 * Przelicznik.formatZSekundamiStatic(sumaGodzinDnia) + " | Redmine: " +
-	 * Przelicznik.zaokraglijDoPolGodziny(sumaGodzinDnia) + "\n");
-	 * 
-	 * grupaZDnia = ""; sumaGodzinDnia = 0;
-	 * 
-	 * } return info; }
-	 */
 
 	// Wyswietl podsumowanie TOTAL z podliczeniem dziennym do Redmine
 	public static String wyswietlZadaniaGrupowanePoDacie() {
