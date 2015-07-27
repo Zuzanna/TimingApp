@@ -1,0 +1,346 @@
+package timing;
+
+
+import java.awt.EventQueue;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Date;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+
+
+import com.itextpdf.text.DocumentException;
+
+public class MyFrameStart extends JFrame {
+	
+	static Zadanie wybraneZadanie = null;	
+
+	// utwórz elementy kluczowe
+	final static Zadanie otwarteZadanie = new Zadanie();
+	private static final String PlayString = "Play";
+	private static final String PauseString = "Pauza";
+	final static JButton bStart = new JButton("Start");	
+	final static JButton bStop = new JButton("Stop");	
+	final static JButton bStopStart = new JButton("Zakończ/zacznij");
+	final static JButton bPauza = new JButton(PauseString);	
+	final static JTextField fOpisZadania = new JTextField(20);	
+
+	final static JButton bOpenGeneratePDF = new JButton("Wygeneruj i otwórz raport PDF");
+	final static JTextField fDataIleWykonanychJuz = new JTextField(40);
+	
+	// lista i nawigacja po liscie
+	final static JList lZadaniaLocal = new JList(ModelZadan.listModelZadan);
+	final static JButton bWyswietlMetryczke = new JButton("Wyświetl metryczkę");
+	
+
+	
+	// info
+	final static JLabel binPath = new JLabel();
+	final static JLabel  fInfoTxt = new JLabel();
+	
+	
+	
+	
+	private static final String WszystkieString = "Wyświetl wszystkie zadania w systemie";
+	private static final String DzisiejszeString = "Wyświetl tylko dzisiejsze zadania";
+	final static JButton bWyswietlZadania = new JButton(WszystkieString);
+
+	final static JTextArea tPrzebiegZadaniaDisplayArea = new JTextArea(5, 50);
+	
+
+	final static JTextArea tResultDisplay = new JTextArea(5, 50);
+
+
+
+	
+
+	
+	
+	public MyFrameStart() {
+		// skonfiguruj frame
+		super(Program.wersjaProgramu);
+		setDefaultCloseOperation(MyFrameStart.EXIT_ON_CLOSE);
+		setSize(700, 600);
+		setLocation(50, 50);
+		setLayout(new FlowLayout(FlowLayout.LEFT));
+		setVisible(true);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setViewportView(lZadaniaLocal);
+		
+		fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate()); // żeby już na starcie nr wykonanych zadań dnia był aktualny
+		
+		ModelZadan.aktualizujListeZadan();
+		ModelZadan.ustawParametryWyswietlaniaListyZadan(lZadaniaLocal);	
+		
+		
+		
+		
+		add(bStart);
+		add(fOpisZadania);
+		add(bStop);
+		add(bStopStart);
+		add(bPauza);
+		add(otwarteZadanie);
+		add(binPath);
+		//add(fInfoTxt); // dodana wersja
+		add(fDataIleWykonanychJuz);	
+		add(scrollPane);
+		add(bWyswietlMetryczke);
+		ustawOknoNaStart();
+		//JOptionPane.showMessageDialog(null, "test");
+		
+		
+		
+		
+		
+		// dodaj listenery do elementów
+		
+		bWyswietlMetryczke.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {
+				EventQueue.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						new MyFrameZadanie();
+					}
+				});
+			}
+		});
+
+		bStart.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tPrzebiegZadaniaDisplayArea.setText("");
+				otwarteZadanie.startCounter();
+				ModelZadan.aktualizujListeZadan(); // dopisuję
+				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+				fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
+				tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
+				ustawPrzyciskiPoStarcie();
+				
+				//lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex(ModelZadan.listModelZadan.getSize() - 1));
+				
+				lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday());  
+				lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex());
+				
+				//lZadaniaLocal.ensureIndexIsVisible(ModelZadan.listModelZadan.getSize() - 1);
+			}
+
+			private void ustawPrzyciskiPoStarcie() {
+				bStart.setEnabled(false);
+				fOpisZadania.setEnabled(true);
+				bStop.setEnabled(true);
+				bPauza.setEnabled(true);
+				bStopStart.setEnabled(true);
+			}
+		});
+
+		fOpisZadania.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {	
+				otwarteZadanie.wyswietlMeldunekONadaniuOpisu(fOpisZadania.getText());
+				Zadanie.aktualneZadanie.taskName = fOpisZadania.getText();
+				tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek()); // SOLVED 4
+				
+				if (!Zadanie.opisy.contains(Zadanie.aktualneZadanie.taskName)) {
+					Zadanie.opisy.add(Zadanie.aktualneZadanie.taskName);
+				}
+
+				ModelZadan.aktualizujListeZadan(); // dopisuję
+				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+				
+				lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday());  
+				lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex());
+			}
+		});
+
+
+
+		bStopStart.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {
+				otwarteZadanie.stopCounter();
+				tPrzebiegZadaniaDisplayArea.setText("");
+				otwarteZadanie.startCounter();
+				ModelZadan.aktualizujListeZadan(); // dopisuję
+				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+				fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
+				tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
+				
+				lZadaniaLocal.setSelectedIndex(Zadanie.aktualneZadanie.iDZadania - 1);  
+				lZadaniaLocal.ensureIndexIsVisible(Zadanie.aktualneZadanie.iDZadania - 1);
+				
+				try {
+					Program.zapiszWszystkoDo();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+	
+			}
+
+		});
+
+		bStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ustawPrzyciskiPoStopie();
+				otwarteZadanie.stopCounter();			
+				ModelZadan.aktualizujListeZadan(); // dopisuję
+				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+				fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
+				tPrzebiegZadaniaDisplayArea.setText("");
+				ModelZadan.aktualizujListeZadan();
+				
+				/*lZadaniaLocal.setSelectedIndex(Zadanie.aktualneZadanie.iDZadania - 1);  
+				lZadaniaLocal.ensureIndexIsVisible(Zadanie.aktualneZadanie.iDZadania - 1);*/
+				
+				lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday() - 1);  
+				lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex() - 1);
+				
+				try {
+					Program.zapiszWszystkoDo();
+				} catch (IOException ef) {
+					ef.printStackTrace();
+				}
+			}
+
+			private void ustawPrzyciskiPoStopie() {
+				bPauza.setEnabled(false);
+				bStop.setEnabled(false);
+				bStopStart.setEnabled(false);
+				bStart.setEnabled(true);
+				fOpisZadania.setEnabled(false);
+			}
+		});
+
+		bPauza.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String cmd = e.getActionCommand();
+				if (PauseString.equals(cmd)) {
+					otwarteZadanie.pauzeCounter();
+					fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
+					tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
+					ModelZadan.aktualizujListeZadan();
+					ustawPrzyciskiPoPauzie();
+				} else {
+					otwarteZadanie.unpauzeCounter();
+					ustawPrzyciskiPoUnPauzie();
+					fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
+					tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
+					ModelZadan.aktualizujListeZadan();
+				}
+				ModelZadan.aktualizujListeZadan(); // dopisuję
+				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+			}
+
+			private void ustawPrzyciskiPoPauzie() {
+				fDataIleWykonanychJuz.setText("---czas spauzowania: " + otwarteZadanie.terminSpauzowania);
+				bPauza.setText(PlayString);
+				bStop.setEnabled(false);
+				bStopStart.setEnabled(false);
+			}
+
+			private void ustawPrzyciskiPoUnPauzie() {
+				bPauza.setText(PauseString);
+				bStop.setEnabled(true);
+				bStopStart.setEnabled(true);
+			}
+		});
+		
+		bWyswietlZadania.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String cmd = e.getActionCommand();
+				if (WszystkieString.equals(cmd)) {
+					tResultDisplay.setText(Zadanie.wyswietlZadaniaGrupowanePoDacie());
+					bWyswietlZadania.setText(DzisiejszeString);
+					ModelZadan.aktualizujListeZadan();
+				} else {
+					ModelZadan.aktualizujListeZadan(); // dopisuję
+					tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
+					ModelZadan.aktualizujListeZadan();
+					bWyswietlZadania.setText(WszystkieString);
+				}
+
+			}
+		});
+		
+		bOpenGeneratePDF.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				Program.openPDF();
+			}
+		});
+		
+		
+		lZadaniaLocal.addListSelectionListener(new ListSelectionListener() {
+			public void valueChanged(ListSelectionEvent arg0) {
+				if (!arg0.getValueIsAdjusting()) {
+					wybraneZadanie = (Zadanie) lZadaniaLocal.getSelectedValue();
+					if (wybraneZadanie != null) {
+						bWyswietlMetryczke.setEnabled(true);
+						MyFrameZadanie.ogladaneWlasnieZadanie = wybraneZadanie;
+						
+						int wybranyIndex = lZadaniaLocal.getSelectedIndex();
+						lZadaniaLocal.ensureIndexIsVisible(wybranyIndex);
+					} else {
+						bWyswietlMetryczke.setEnabled(false);
+					}
+				}
+			}
+		});
+	}
+
+	// umieśc elementy w screenie
+	private void ustawOknoNaStart() {
+		
+
+		String dzisiejszaData = Program.dateFormat.format(new Date());
+		
+		fOpisZadania.setEnabled(false);
+		bStop.setEnabled(false);	
+		bStopStart.setEnabled(false);
+		bPauza.setEnabled(false);
+		
+		fDataIleWykonanychJuz.setEditable(false);
+		fDataIleWykonanychJuz.setText("Dziś mamy: " + dzisiejszaData + " Wykonanych dziś zadań: " + Zadanie.getIleZadanDoneToday());
+		
+		tPrzebiegZadaniaDisplayArea.setEditable(false);
+		tPrzebiegZadaniaDisplayArea.setText("Dane programu będą przechowywane tu: "+Program.ekstensjaPath +".\nW tym oknie będziesz widzieć logi przebiegu zadania");
+		binPath.setText("Dane programu są tu: "+Program.ekstensjaPath);
+
+		bWyswietlMetryczke.setEnabled(false);
+
+		tResultDisplay.setEditable(false);
+		//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze()); // gdy brak zadań w systemie, wyświetla instrukcję
+		tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia());
+		
+		//fInfoTxt.setText("by Zuzanna Malińska, " + Program.wersjaProgramu);
+		
+
+		
+		
+		//add(tPrzebiegZadaniaDisplayArea);
+
+		//add(lZadaniaLocal);
+				
+		add(tResultDisplay);		
+		//add(bWyswietlZadania);
+		add(bOpenGeneratePDF);
+/*		
+		lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday());  
+		lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex());*/
+	}
+}

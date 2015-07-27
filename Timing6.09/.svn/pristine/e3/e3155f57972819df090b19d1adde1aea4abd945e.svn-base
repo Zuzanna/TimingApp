@@ -1,0 +1,146 @@
+package calendar;
+
+
+import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Locale;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import timing.ModelZadan;
+import timing.MyFrameStart;
+import timing.MyFrameZadanie;
+import timing.Zadanie;
+
+public class FrameCheckOutCalendar extends JFrame {
+	final JButton bPowrot = new JButton("Powrót");
+	
+	public static String wybranaDataZKalendarza = null;
+
+	// private Image image;
+	private JFrame frame;
+
+	private JTextField dateField;
+
+	public FrameCheckOutCalendar() {
+		super("JCalendar Tester");
+
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setSize(600, 600);
+		setLocation(50, 50);
+		setLayout(new FlowLayout(FlowLayout.LEFT));
+		setVisible(true);
+
+		JPanel panel = new JPanel();
+		dateField = new JTextField(12);
+		panel.add(dateField);
+		JButton bCalendar = new JButton("Kalendarz");
+
+		panel.add(bCalendar);
+
+		JPanel buttonPanel = new JPanel();
+
+		JButton quitButton = new JButton("Quit");
+		quitButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				exitProcedure();
+			}
+		});
+
+		buttonPanel.add(quitButton);
+
+		add(panel);
+		add(buttonPanel);
+		add(bPowrot);
+
+		// dodaj listenery do elementów
+		bPowrot.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {
+				dispose();
+				
+				MyFrameStart.wybranaData = wybranaDataZKalendarza;
+				//MyFrameStart.tResultDisplay.setText("tu beda zadania dla wybranej daty " + wybranaDataZKalendarza 
+				//		+ Zadanie.wyswietlZadaniaDlaDaty(wybranaDataZKalendarza));
+				//System.out.println("test" + Zadanie.wyswietlZadaniaDlaDaty(wybranaDataZKalendarza));
+				
+				//MyFrameStart.tResultDisplay.setText(Zadanie.wyswietlZadaniaGrupowanePoDacie(wybranaDataZKalendarza));
+				ModelZadan.wyswietlListeZadan(wybranaDataZKalendarza);
+				//MyFrameStart.tResultDisplay.setText(Zadanie.wyswietlZadaniaGrupowanePoDacie());
+				
+				//MyFrameStart.tResultDisplay.setText(wybranaDataZKalendarza + "  "
+				//		+ Zadanie.wyswietlPodsumowanieDnia(wybranaDataZKalendarza));
+				
+				
+				MyFrameStart.tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia(MyFrameStart.wybranaData));
+			}
+		});
+		
+		bCalendar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {
+				JCalendarDialog dialog = new JCalendarDialog(frame);
+	            dialog.addExclusionDateRange(new ExclusionDateRange("M/d/yy",
+	                    "2/16/15", "2/16/15"));
+	            dialog.setDialogTitle("Appointment Date");
+	            //dialog.setExclusionDaysOfWeek(Calendar.SATURDAY, Calendar.SUNDAY);
+	            dialog.setLocale(Locale.ENGLISH);
+	            dialog.createDialog();
+	            if (dialog.getReturnCode() == JCalendarDialog.OK_PRESSED) {
+	            	dateField.setText(dialog.getFormattedSelectedDate());
+	            	MyFrameStart.tdateField.setText(dialog.getFormattedSelectedDate());
+	            	wybranaDataZKalendarza = dialog.getFormattedSelectedDate();
+	            	MyFrameStart.wybranaData = wybranaDataZKalendarza;
+	            }
+			}
+		});
+	}
+
+	public void exitProcedure() {
+		dispose();
+		System.exit(0);
+	}
+
+	/*
+	 * public Image getImage() { Image image = null; try { image =
+	 * ImageIO.read(getClass() .getResourceAsStream("/calendar.png")); } catch
+	 * (IOException e) { e.printStackTrace(); } return image; }
+	 */
+
+	private class CalendarActionListener implements ActionListener {
+
+		private JFrame frame;
+
+		private JTextField textField;
+
+		public CalendarActionListener(JFrame frame, JTextField textField) {
+			this.frame = frame;
+			this.textField = textField;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent event) {
+			JCalendarDialog dialog = new JCalendarDialog(frame);
+			dialog.addExclusionDateRange(new ExclusionDateRange("M/d/yy", "2/16/15", "2/16/15"));
+			dialog.setDialogTitle("Appointment Date");
+			dialog.setExclusionDaysOfWeek(Calendar.SATURDAY, Calendar.SUNDAY);
+			dialog.setLocale(Locale.ENGLISH);
+			dialog.createDialog();
+			if (dialog.getReturnCode() == JCalendarDialog.OK_PRESSED) {
+				textField.setText(dialog.getFormattedSelectedDate());
+			}
+		}
+
+	}
+
+}

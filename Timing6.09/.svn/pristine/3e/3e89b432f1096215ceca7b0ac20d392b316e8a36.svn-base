@@ -1,0 +1,509 @@
+package timing;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
+
+import javax.swing.JLabel;
+
+public class Zadanie extends JLabel implements ActionListener, Serializable {
+
+	/*
+	 * S1 - pierwszy system liczenia czasu s1CzasTrwania = z licznika s1CzasPauz
+	 * = z dat spauzowania i odpauzowania s1CzasTotal = s1CzasTrwania +
+	 * s1CzasPauz
+	 * 
+	 * S2 - drugi, kontrolny, system liczenia czasu s2CzasTrwania = s2CzasTotal
+	 * - s2CzasPauz s2CzasPauz = z dat spauzowania i odpauzowania s2CzasTotal =
+	 * z dat startu i endu zadania
+	 * 
+	 * 
+	 * S3 - trzeci, kontrolny, system liczenia czasu s3CzasTrwania = s2CzasTotal
+	 * - s2CzasPauz s3CzasPauz = BRAK, chyba że dodamy jako parametr s3CzasTotal
+	 * = z dat startu i endu zadania
+	 */
+
+	/* STATIKI */
+	static int autoCounter = 1;
+	static Zadanie aktualneZadanie;
+	static ArrayList<Zadanie> wszystkieZadania = new ArrayList<Zadanie>();
+	static ArrayList daty = new ArrayList<>();
+	static ArrayList opisy = new ArrayList<>();
+
+	/* ZADANIE OPIS */
+	int iDZadania;
+	String dataZadania;
+	String taskName = "______";
+	int ilePauzZadania = 0;
+	String ilePauzZadaniaS = "";
+
+	String czasRozpoczeciaS = "__:__:__";
+	String czasZakonczeniaS = "__:__:__";
+
+	Date dataRozpoczecia; // potrzebne do wyliczania ręcznego
+	Date dataZakonczenia; // potrzebne do wyliczania czasu trwania z dat
+
+	long s1CzasTrwaniaFaktyczny = 0;
+	String s1CzasTrwaniaFaktycznyS = "00:00:00";
+	long s1CzasTotal;
+	String s1CzasTotalS = "";
+	long s1CzasPauz = 0;
+	String s1CzasPauzS = "";
+
+	long s2CzasTotal;
+	String s2CzasTotalS = "";
+
+	long s3CzasTotal;
+	String s3CzasTotalS = "00:00:00";
+
+	String przebiegZadaniaMeldunek = ""; // meldunki z bieżacych operacji,
+											// wyświetlane w konsoli, a
+	// dzięki temu stringowi dodawane także w oknie
+
+	// static double redmineDzienny = 0;
+
+	/* TIMER */
+	private javax.swing.Timer timer = new javax.swing.Timer(100, this);
+	boolean running = false;
+	private long initTimeLicznika = System.currentTimeMillis();
+	private long startTimeLicznika;
+	private long pauseTimeLicznika;
+	long licznikBiezacy;
+
+	String licznikFormatMilisekund;
+	String licznikFormatZegarowy;
+	String terminSpauzowania;
+	String terminOdpauzowania;
+	long tempCzasPauz;
+	Date dataSpauzowania; // wyliczanie pauzy
+	Date dataOdpauzowania; // wyliczanie pauzy
+
+	/* POMOCNICZE */
+	static DateFormat formatyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
+	static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+	static SimpleDateFormat longDateFormat = new SimpleDateFormat("HH:mm:ss");
+	static String aktualnaData = null;
+
+	// long pauzaOd; // tylko wyświetlanie
+
+	long nanoStart;
+
+	/* KONSTRUKTOR */
+	public Zadanie() {
+		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
+		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
+		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
+		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);
+	}
+
+	public static Zadanie utworzNoweZadanie() {
+		aktualneZadanie = new Zadanie();
+		//aktualneZadanie.iDZadania = autoCounter++;
+		aktualneZadanie.iDZadania = getIleZadanDoneToday() + 1;
+		setAutoCounter(getIleZadanDoneToday() + 1);
+		aktualneZadanie.dataZadania = formatyyyyMMdd.format(new Date());
+		wszystkieZadania.add(aktualneZadanie);
+		if (!daty.contains(aktualneZadanie.dataZadania)) {
+			daty.add(aktualneZadanie.dataZadania);
+		}
+		return aktualneZadanie;
+	}
+
+	public static void zamknijBiezace() {
+		aktualneZadanie = null;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		licznikBiezacy = System.currentTimeMillis() - startTimeLicznika;
+		licznikFormatMilisekund = "" + (System.currentTimeMillis() - startTimeLicznika);
+		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - startTimeLicznika);
+		//setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);
+		setText(licznikFormatZegarowy);
+	}
+
+	public void startCounter() {
+		utworzNoweZadanie();
+		if (running == false) {
+			startTimeLicznika = System.currentTimeMillis();
+			nanoStart = System.nanoTime();
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			aktualneZadanie.dataRozpoczecia = new Date(timestamp.getTime());
+			aktualneZadanie.czasRozpoczeciaS = simpleDateFormat.format(timestamp);
+			przebiegZadaniaMeldunek = "- Otwarto zadanie " + aktualneZadanie.iDZadania + ". Czas rozpoczęcia zadania: [" + aktualneZadanie.czasRozpoczeciaS + "]\n";
+			// SOLVED 1 zmiana += na =
+		} else {
+			startTimeLicznika = System.currentTimeMillis() - (pauseTimeLicznika - startTimeLicznika);
+		}
+		timer.start();
+		running = true;
+	}
+
+	public void wyswietlMeldunekONadaniuOpisu(String text) {
+		przebiegZadaniaMeldunek += "- Dodano opis: " + text + "\n";
+	}
+	
+	
+	public void zmienOpis(String text) {
+		this.taskName = text;
+		if (!opisy.contains(text)) {
+			opisy.add(text);
+		}
+	}
+	
+	public void stopCounter() {
+		timer.stop();
+		long ile = System.nanoTime();
+		running = false;
+
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		aktualneZadanie.dataZakonczenia = new Date(timestamp.getTime());
+
+		long odDo = (ile - nanoStart) / 1000000;
+		String licznik = getText();
+		aktualneZadanie.s1CzasTrwaniaFaktyczny = licznikBiezacy;
+		//aktualneZadanie.s1CzasTrwaniaFaktycznyS = Przelicznik.formatZSekundamiStatic(aktualneZadanie.s1CzasTrwaniaFaktyczny) + ", " + aktualneZadanie.s1CzasTrwaniaFaktyczny; // z milisekundami
+		aktualneZadanie.s1CzasTrwaniaFaktycznyS = Przelicznik.formatZSekundamiStatic(aktualneZadanie.s1CzasTrwaniaFaktyczny);
+		aktualneZadanie.czasZakonczeniaS = simpleDateFormat.format(timestamp);
+
+		przebiegZadaniaMeldunek += "- Zamknięto zadanie " + aktualneZadanie.iDZadania + ". Czas zakończenia zadania: [" + aktualneZadanie.czasZakonczeniaS + "]\n";
+		przebiegZadaniaMeldunek += "- Podsumowanie czasu" + "\n";
+		przebiegZadaniaMeldunek += "  Czas trwania faktyczny (z licznika) w milisekundach: [" + aktualneZadanie.s1CzasTrwaniaFaktyczny + "] i w formacie zegarowym: [" + aktualneZadanie.s1CzasTrwaniaFaktycznyS + "]\n";
+
+		aktualneZadanie.s1CzasTotal = aktualneZadanie.s1CzasTrwaniaFaktyczny + aktualneZadanie.s1CzasPauz;
+		//aktualneZadanie.s1CzasTotalS = Przelicznik.formatZSekundamiStatic(aktualneZadanie.s1CzasTotal) + ", " + aktualneZadanie.s1CzasTotal; // z milisekundami
+		aktualneZadanie.s1CzasTotalS = Przelicznik.formatZSekundamiStatic(aktualneZadanie.s1CzasTotal);
+
+		//aktualneZadanie.s1CzasPauzS = Przelicznik.formatZSekundamiStatic(tempCzasPauz) + ", " + tempCzasPauz;
+		aktualneZadanie.s1CzasPauzS = Przelicznik.formatZSekundamiStatic(tempCzasPauz);
+		
+		przebiegZadaniaMeldunek += "  czas pauz: " + aktualneZadanie.s1CzasPauz + "\n";
+		przebiegZadaniaMeldunek += "  TOTALs1: " + "czas pauz: " + aktualneZadanie.s1CzasPauz + " + czas trwania z licznika: " + +aktualneZadanie.s1CzasTrwaniaFaktyczny + "  =  " + aktualneZadanie.s1CzasTotal + "\n";
+		
+		try {
+			aktualneZadanie.s3CzasTotalS = aktualneZadanie.wyliczRecznie(aktualneZadanie.czasRozpoczeciaS, aktualneZadanie.czasZakonczeniaS);
+			aktualneZadanie.s3CzasTotal = Przelicznik.skonwertujStringToLong(aktualneZadanie.s3CzasTotalS);
+		
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+		}
+		aktualneZadanie.przebiegZadaniaMeldunek += "  CzasOdDos3: w milisekundach [" + aktualneZadanie.s3CzasTotal +"] i w formacie zegatowym: ["+ aktualneZadanie.s3CzasTotalS +"]\n";
+
+		try {
+			aktualneZadanie.s3CzasTotalS = aktualneZadanie.wyliczRecznie(aktualneZadanie.czasRozpoczeciaS, aktualneZadanie.czasZakonczeniaS);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		zamknijBiezace();
+		tempCzasPauz = 0;
+
+	}
+
+	public void pauzeCounter() {
+		/*
+		 * pauzaOd = licznikBiezacy; System.out.println("Pauza od: "+pauzaOd);
+		 */
+
+		pauseTimeLicznika = System.currentTimeMillis();
+		timer.stop();
+		terminSpauzowania = simpleDateFormat.format(new Date());
+		System.out.println("---czas spauzowania: " + terminSpauzowania + ", " + getText());
+		przebiegZadaniaMeldunek += "---czas spauzowania: " + terminSpauzowania + ", " + getText() + "\n";
+		aktualneZadanie.ilePauzZadania++;
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		dataSpauzowania = new Date(timestamp.getTime());
+	}
+
+	public void unpauzeCounter() {
+		if (running == false) {
+			startTimeLicznika = System.currentTimeMillis();
+		} else {
+			startTimeLicznika = System.currentTimeMillis() - (pauseTimeLicznika - startTimeLicznika);
+		}
+
+		timer.start();
+		running = true;
+
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+		dataOdpauzowania = new Date(timestamp.getTime());
+		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+		terminOdpauzowania = simpleDateFormat.format(new Date());
+		System.out.println("---czas odpauzowania: " + terminOdpauzowania + ", " + getText());
+		przebiegZadaniaMeldunek += "---czas odpauzowania: " + terminOdpauzowania + ", " + getText() + "\n";
+		long czasTrwaniaPauzy = dataOdpauzowania.getTime() - dataSpauzowania.getTime();
+		System.out.println("czas trwania tej pauzy, w milisekundach: " + czasTrwaniaPauzy);
+		przebiegZadaniaMeldunek += "czas trwania tej pauzy, w milisekundach: " + czasTrwaniaPauzy + "\n";
+		tempCzasPauz += czasTrwaniaPauzy;
+		aktualneZadanie.s1CzasPauz = tempCzasPauz;
+		System.out.println("!!! aktualneZadanie.s1CzasPauz: " + aktualneZadanie.s1CzasPauz);
+		//aktualneZadanie.s1CzasPauzS = Przelicznik.formatZSekundamiStatic(tempCzasPauz) + ", " + tempCzasPauz; // z milisekundami
+		aktualneZadanie.s1CzasPauzS = Przelicznik.formatZSekundamiStatic(tempCzasPauz);
+		System.out.println("- łączny czas trwania pauz zsumowany, w milisekundach: " + aktualneZadanie.s1CzasPauz);
+		przebiegZadaniaMeldunek += "- łączny czas trwania pauz zsumowany, w milisekundach: " + aktualneZadanie.s1CzasPauz + "\n";
+	}
+
+// toString dla listy zadan
+	
+/*	public String toString() {
+		return dataZadania + " " + s3CzasTotalS + " Zadanie " + iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS 
+				+ " | " + taskName + " | " + s1CzasTrwaniaFaktycznyS + " | " + s1CzasTotalS + " | " + s1CzasPauzS;
+	}*/
+	
+	// s1CzasTrwaniaFaktycznyS - ten jest naliczany do RM
+	// s3CzasTotalS - czas trwania ze sparsowanych dat
+	public String toString() {
+		return dataZadania + " " + " Zadanie " + iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS 
+				+ " | " + taskName + " | " + s1CzasTrwaniaFaktycznyS + " | " + s1CzasTotalS + " | " + "Pauz: " +s1CzasPauzS;
+	}
+
+	public String wyliczCzasZadaniaDoRedmine() {
+		String czasZadaniaDoRedmine = "";
+		if (s1CzasTrwaniaFaktyczny != 0) {
+			//System.out.println("!!! dla zadania istnieje czas faktyczny");
+			czasZadaniaDoRedmine = s1CzasTrwaniaFaktycznyS;
+
+		} else {
+			//System.out.println("!!! dla zadania nie istnieje czas faktyczny - zostanie użyty s3CzasTotalS");
+			czasZadaniaDoRedmine = s3CzasTotalS;
+		}
+		// System.out.println(toString() + "    " + czasZadaniaDoRedmine);
+		return czasZadaniaDoRedmine;
+
+	}
+
+	public static String wyswietlZadaniaGrupowanePoDacie() {
+		String info = "";
+		String grupaZDnia = "";
+		long sumaGodzinDnia = 0;
+
+		long sumaGodzinOpisu = 0;
+
+		if (wszystkieZadania.isEmpty()) {
+			info = "Brak zadań";
+		}
+
+		else {
+			// System.out.println(daty);
+			for (int i = 0; i < daty.size(); i++) {
+				info += daty.get(i).toString() + "\n";
+				for (Zadanie z : wszystkieZadania) {
+					if (z.dataZadania.equalsIgnoreCase(daty.get(i).toString())) {
+						grupaZDnia += "Zadanie " + z.iDZadania + " | " + z.czasRozpoczeciaS + "-" + z.czasZakonczeniaS + " | " + z.taskName + " | " + z.wyliczCzasZadaniaDoRedmine() + "\n";
+						sumaGodzinDnia += Przelicznik.skonwertujStringToLong(z.wyliczCzasZadaniaDoRedmine());
+					}
+				}
+				info += grupaZDnia;
+				info += wyliczSumeDlaOpisu(daty.get(i).toString());
+				info += "SUMA DLA " + daty.get(i).toString() + ": " + Przelicznik.formatZSekundamiStatic(sumaGodzinDnia) + " | Redmine: " + Przelicznik.zaokraglijDoPolGodziny(sumaGodzinDnia) + "\n" + "\n";
+				System.out.println("SUMA DLA " + daty.get(i).toString() + ": " + Przelicznik.formatZSekundamiStatic(sumaGodzinDnia) + " | Redmine: " + Przelicznik.zaokraglijDoPolGodziny(sumaGodzinDnia) + "\n");
+
+				grupaZDnia = "";
+				sumaGodzinDnia = 0;
+			}
+		}
+		return info;
+	}
+
+	public static String wyliczSumeDlaOpisu(String dzien) {
+		String info = "Suma dla " + dzien + "\n";
+		long sumaGodzinOpisu = 0;
+		for (int i = 0; i < opisy.size(); i++) {
+			for (Zadanie z : wszystkieZadania) {
+				if (z.dataZadania.equalsIgnoreCase(dzien)) {
+					if (z.taskName.equalsIgnoreCase(opisy.get(i).toString())) {
+						sumaGodzinOpisu += Przelicznik.skonwertujStringToLong(z.wyliczCzasZadaniaDoRedmine());
+					}
+				}
+			}
+
+			if (sumaGodzinOpisu != 0) {
+				info += "- " + opisy.get(i).toString() + ": " + Przelicznik.formatZSekundamiStatic(sumaGodzinOpisu) + " | Redmine: " + Przelicznik.zaokraglijDoPolGodziny(sumaGodzinOpisu) + "\n";
+			}
+			sumaGodzinOpisu = 0;
+		}
+
+		System.out.println(info);
+		return info;
+	}
+
+	public static String wyswietlZadaniaDzisiejsze() {
+		String info = "";
+		if (wszystkieZadania.isEmpty()) {
+			info += Program.instrukcja();
+		} else {
+			aktualnaData = formatyyyyMMdd.format(new Date());
+			for (Zadanie z : wszystkieZadania) {
+				if (z.dataZadania.equalsIgnoreCase(Zadanie.aktualnaData)) {
+					info += z.toString() + "\n";
+				}
+			}
+		}
+		return info;
+	}
+
+	public String dayTaskStatusUpdate() {
+		String status = "";
+		String IDZadania = "";
+		String przerw = "";
+		String zadan = "";
+		if ((aktualneZadanie != null) && (ilePauzZadania > 0)) {
+			przerw = " Przerw: " + ilePauzZadania;
+		}
+
+		int ileWykonanychDzis = getIleZadanDoneToday();
+/*		for (Zadanie z : wszystkieZadania) {
+			if (z.dataZadania.equalsIgnoreCase(aktualnaData) && (z != aktualneZadanie)) {
+				ileWykonanychDzis++;
+				setAutoCounter(ileWykonanychDzis); // dopisane 7.07
+			}
+		}*/
+		zadan = " Wykonanych dziś zadań: " + ileWykonanychDzis;
+		aktualnaData = formatyyyyMMdd.format(new Date());
+		status = "Dziś mamy: " + aktualnaData + IDZadania + przerw + zadan;
+		return status;
+	}
+	
+	public static int getIleZadanDoneToday() {
+		
+		int ile = 0;
+		
+		for (Zadanie z : wszystkieZadania) {
+			if (z.dataZadania.equalsIgnoreCase(aktualnaData) && (z != aktualneZadanie)) {
+				ile++;
+			}
+		}
+
+		return ile;
+	}
+
+	/* ODTWARZANIE, BACKUP, DODAWANIE RĘCZNIE */
+
+	public static Zadanie dodajRecznieZadanie(String dataMoja, int numer, String nowyOpis, String otwarcie, String zamkniecie) throws ParseException {
+		Zadanie noweZadanie = new Zadanie();
+		Zadanie.wszystkieZadania.add(noweZadanie);
+
+		noweZadanie.iDZadania = numer;
+		noweZadanie.dataZadania = dataMoja;
+		noweZadanie.czasRozpoczeciaS = otwarcie;
+		noweZadanie.czasZakonczeniaS = zamkniecie;
+		noweZadanie.taskName = nowyOpis;
+		if (!daty.contains(noweZadanie.dataZadania)) {
+			daty.add(noweZadanie.dataZadania);
+		}
+
+		if (!opisy.contains(noweZadanie.taskName)) {
+			opisy.add(noweZadanie.taskName);
+		}
+		noweZadanie.s3CzasTotalS = noweZadanie.wyliczRecznie(otwarcie, zamkniecie);
+		noweZadanie.s1CzasPauzS = "n.d.";
+		noweZadanie.s1CzasTrwaniaFaktycznyS = "n.d.";
+		noweZadanie.ilePauzZadaniaS = "n.d.";
+		noweZadanie.s1CzasTotalS = "n.d.";
+		return noweZadanie;
+	}
+
+	public void zmienDateZadania(int numer, String dataMoja) {
+		for (Zadanie z : wszystkieZadania) {
+			if ((z.iDZadania == numer) && z.dataZadania.equalsIgnoreCase(dataMoja)) {
+				System.out.println(z.toString());
+				System.out.println("Zmiana daty zadania nr " + z.iDZadania);
+				System.out.println("Z: " + z.dataZadania + " na: " + dataMoja);
+				z.dataZadania = dataMoja;
+				System.out.println(z.toString());
+			}
+		}
+	}
+
+	public void zmienOpisZadania(int numer, String dataMoja, String nowyOpis) {
+		for (Zadanie z : Zadanie.wszystkieZadania) {
+			if ((z.iDZadania == numer) && z.dataZadania.equalsIgnoreCase(dataMoja)) {
+				System.out.println(z.toString());
+				System.out.println("Zmiana opisu zadania nr " + z.iDZadania + " z dnia " + z.dataZadania);
+				System.out.println("Z: " + z.taskName + " na: " + nowyOpis);
+				z.taskName = nowyOpis;
+				System.out.println(z.toString());
+			}
+		}
+	}
+
+	public String wyliczRecznie(String otwarcie, String zamkniecie) throws ParseException {
+		long temp = s3CzasTotalSZeSparsowanychCzasow(otwarcie, zamkniecie);
+		String tempString = Przelicznik.formatZSekundamiStatic(temp);
+		return tempString;
+	}
+
+	public long s3CzasTotalSZeSparsowanychCzasow(String czas1, String czas2) {
+		Date start = null;
+		Date end = null;
+		try {
+			start = simpleDateFormat.parse(czas1);
+			end = simpleDateFormat.parse(czas2);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return (end.getTime() - start.getTime());
+	}
+
+	public String wyswietlPrzebiegZadaniaMeldunek() {
+		return przebiegZadaniaMeldunek;
+	}
+
+	/* EKSTENSJA */
+
+	/* do ekstencji = autocounter get */
+	public static int getAutoCounter() {
+		return autoCounter;
+	}
+
+	/* do ekstencji = autocounter set */
+	public static void setAutoCounter(int autoCounter) {
+		autoCounter = autoCounter;
+	}
+
+	public static void pokazEkstensje() throws FileNotFoundException, IOException, ClassNotFoundException {
+		System.out.println("----------------------");
+		System.out.println("Ekstensja klasy: " + Zadanie.class);
+		for (Zadanie z : wszystkieZadania) {
+			String spacja = "";
+			if (z.iDZadania < 10) {
+				spacja = " ";
+			}
+			System.out.println(spacja + z.toString());
+		}
+	}
+
+	public static void wczytajEkstensje(ObjectInputStream in) throws FileNotFoundException, IOException, ClassNotFoundException {
+		wszystkieZadania = (ArrayList<Zadanie>) in.readObject();
+		daty = (ArrayList) in.readObject();
+		opisy = (ArrayList) in.readObject();
+		int numer = in.readInt();
+		setAutoCounter(numer);
+	}
+
+	public static void zapiszEkstensje(ObjectOutputStream out) throws IOException {
+		out.writeObject(wszystkieZadania);
+		out.writeObject(daty);
+		out.writeObject(opisy);
+		out.writeInt(getAutoCounter());
+	}
+
+
+
+
+}

@@ -1,0 +1,239 @@
+package timing;
+
+import java.awt.Desktop;
+import java.awt.EventQueue;
+import java.awt.Rectangle;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+
+
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Font.FontFamily;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfWriter;
+
+
+public class Program {
+	
+	private static String tempDir = System.getProperty ("java.io.tmpdir"); 
+	final static String ekstensjaPath = getTempDir() + "Timing6.06.bin"; 
+	final static String pdfPath = getTempDir() + "Timing6.06-statystyki";
+	
+	static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	static DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+	static DateFormat timeFormatasfilename = new SimpleDateFormat("HH-mm-ss");
+
+	public static final String FONTBOLD = "c:/windows/fonts/arialbd.ttf";
+	public static final String FONTNORMAL = "c:/windows/fonts/arial.ttf";
+	
+	
+	public final static String wersjaProgramu = Program.wygenerujWersje(System.getProperty("user.dir"));
+
+	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException, ClassNotFoundException, DocumentException {
+		try {
+			wczytajWszystkoDo();
+		} catch (Exception e1) {
+		}
+/*		Zadanie.dodajRecznieZadanie("2014/08/25", 1, "Abak", "10:00:00", "12:00:00"); // test
+		Zadanie.dodajRecznieZadanie("2014/08/25", 2, "Abak", "13:30:00", "15:00:00"); // test
+		Zadanie.dodajRecznieZadanie("2014/08/25", 3, "Test", "15:30:00", "16:00:00"); // test
+		Zadanie.dodajRecznieZadanie("2014/08/25", 4, "Inny", "17:30:00", "18:00:00"); // test
+		
+		Zadanie.dodajRecznieZadanie("2014/07/10", 1, "Abak", "13:30:00", "15:00:00"); // test
+		Zadanie.dodajRecznieZadanie("2014/07/10", 2, "Abak", "13:30:00", "15:00:00"); // test
+*/
+		
+		inicjalizujAll();
+		zapiszWszystkoDo();	
+	}
+
+	
+	static void zapiszWszystkoDo() throws FileNotFoundException, IOException {
+		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(ekstensjaPath));
+		Zadanie.zapiszEkstensje(out);
+		out.close();
+	}
+	
+	static void wczytajWszystkoDo() throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream in = new ObjectInputStream(new FileInputStream(ekstensjaPath));
+		Zadanie.wczytajEkstensje(in);
+		in.close();
+	}
+	
+	private static void inicjalizujAll() {
+		EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MyFrameStart();
+            }
+        });
+	}
+	
+	public static String instrukcja() {
+		String info = "";
+		info += "Kliknij START, by rozpocząć nowe zadanie" + "\n";
+		info += "Wpisz opis zadania i kliknij ENTER." + "\n";
+		info += "Kliknij STOP, by zamknąć zadanie." + "\n";
+		info += "Kliknij ZAKOŃCZ/ZACZNIJ, by zamknąć zadanie i od razu otworzyć nowe." + "\n";
+		info += "Kliknij PAUZA, aby przerwać bieżące zadanie, następnie PLAY, aby je wznowić." + "\n\n";
+		info += "W tym oknie będziesz widzieć raport z zadań z podliczeniem czasu";
+		return info;
+	}
+	
+	public static String wygenerujWersje(String wersja) {
+		String wanted = "";
+		int podzialOstatni = 0;
+		for (int i = 0; i < wersja.length(); i++) {
+			if (wersja.contains("\\")) {
+				podzialOstatni = wersja.lastIndexOf("\\");
+			}
+		}
+		wanted = wersja.substring(podzialOstatni + 1);
+		return wanted;
+	}
+	
+	public static void openPDF() {
+		File file2 = new File(pdfPath  + ".pdf");
+		generatePDF(file2);
+
+		try {
+			if (file2.exists()) {
+				if (Desktop.isDesktopSupported()) {
+					Desktop.getDesktop().open(file2);
+				}
+				else {
+					System.out.println("Awt Desktop is not supported!");
+				}
+			}
+			else {
+				System.out.println("File is not exists!");
+			}
+			System.out.println("Done. PDF generated, can be found here: " + pdfPath);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private static void generatePDF(File file2) {
+		BaseFont fb;
+		BaseFont fn;
+		Rectangle pagesize = new Rectangle();
+		
+		com.itextpdf.text.Document document2 = new com.itextpdf.text.Document(PageSize.A4, 50, 50, 50, 50);
+		document2.addCreationDate();
+
+		
+
+		try {
+			PdfWriter writer = PdfWriter.getInstance(document2, new FileOutputStream(file2));
+			document2.open();
+			fb = BaseFont.createFont(FONTBOLD, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			fn = BaseFont.createFont(FONTNORMAL, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			Paragraph a = new Paragraph(wyczyscZPolskichZnakow("STATYSTYKI wygenerowane " + dateFormat.format(new Date())
+					+ ", " + timeFormat.format(new Date())), new Font(fb, 12));
+			document2.add(a);
+			String czyszczony = wyczyscZPolskichZnakow(Zadanie.wyswietlZadaniaGrupowanePoDacie());
+			document2.add(new Paragraph(czyszczony, new Font(fn, 12)));
+			document2.close();
+
+		} catch (FileNotFoundException | DocumentException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+/*	public static void openPDF() {
+		File file2 = new File(pdfPath + dateFormat.format(new Date()) + "_" + timeFormatasfilename.format(new Date()) + ".pdf");
+		generatePDF(file2);
+
+		try {
+			if (file2.exists()) {
+				if (Desktop.isDesktopSupported()) {
+					Desktop.getDesktop().open(file2);
+				}
+				else {
+					System.out.println("Awt Desktop is not supported!");
+				}
+			}
+			else {
+				System.out.println("File is not exists!");
+			}
+			System.out.println("Done. PDF generated, can be found here: " + pdfPath);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	private static void generatePDF(File file2) {
+		BaseFont fb;
+		BaseFont fn;
+		Rectangle pagesize = new Rectangle();
+		com.itextpdf.text.Document document2 = new com.itextpdf.text.Document(PageSize.A4, 50, 50, 50, 50);
+		document2.addCreationDate();
+		try {
+			PdfWriter writer = PdfWriter.getInstance(document2, new FileOutputStream(file2));
+			document2.open();
+			fb = BaseFont.createFont(FONTBOLD, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			fn = BaseFont.createFont(FONTNORMAL, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+			Paragraph a = new Paragraph(wyczyscZPolskichZnakow("STATYSTYKI wygenerowane " + dateFormat.format(new Date())
+					+ ", " + timeFormat.format(new Date())), new Font(fb, 12));
+			document2.add(a);
+			String czyszczony = wyczyscZPolskichZnakow(Zadanie.wyswietlZadaniaGrupowanePoDacie());
+			document2.add(new Paragraph(czyszczony, new Font(fn, 12)));
+			document2.close();
+
+		} catch (FileNotFoundException | DocumentException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}*/
+
+	
+	private static String wyczyscZPolskichZnakow(String all) {
+		String all_n = all.replaceAll("ń", "\u0144");
+		String all_o = all_n.replaceAll("ó", "\u00F3");
+		String all_e = all_o.replaceAll("ę", "\u0119");
+		String all_a = all_e.replaceAll("ą", "\u0105");
+		String all_z1 = all_a.replaceAll("ż", "\u017C");
+		String all_z2 = all_z1.replaceAll("ź", "\u017A");
+		String all_s = all_z2.replaceAll("ś", "\u015B");
+		String all_fin = all_s.replaceAll("ł", "\u0142");
+		String all_fin2 = all_fin.replaceAll("Ó", "\u00D3");
+		String all_fin3 = all_fin2.replaceAll("Ą", "\u0104");
+		String all_fin4 = all_fin3.replaceAll("Ę", "\u0118");
+		String all_fin5 = all_fin4.replaceAll("Ł", "\u0141");
+		String all_fin6 = all_fin5.replaceAll("Ś", "\u015A");
+		String all_fin7 = all_fin6.replaceAll("Ć", "\u0106");
+		String all_fin8 = all_fin7.replaceAll("Ż", "\u017B");
+		String all_fin9 = all_fin8.replaceAll("Ź", "\u0179");
+		String all_fin10 = all_fin9.replaceAll("Ń", "\u0143");
+		String all_fin11 = all_fin10.replaceAll("ć", "\u0107");
+		return all_fin11;
+	}
+
+
+	public static String getTempDir() {
+		return tempDir;
+	}
+
+
+	public static void setTempDir(String tempDir) {
+		Program.tempDir = tempDir;
+	}
+}

@@ -1,0 +1,123 @@
+package helpers;
+
+import java.awt.BorderLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Locale;
+ 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+ 
+public class JCalendarTester implements Runnable {
+ 
+    private Image image;
+ 
+    private JFrame frame;
+ 
+    private JButton calendarIcon;
+ 
+    private JTextField dateField;
+ 
+    public JCalendarTester() {
+        this.image = getImage();
+    }
+ 
+    @Override
+    public void run() {
+        frame = new JFrame("JCalendar Tester");
+        frame.setIconImage(image);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                exitProcedure();
+            }
+        });
+ 
+        JPanel panel = new JPanel();
+ 
+        dateField = new JTextField(12);
+        panel.add(dateField);
+ 
+        calendarIcon = new JButton(new ImageIcon(image));
+        calendarIcon.addActionListener(new CalendarActionListener(frame,
+                dateField));
+        panel.add(calendarIcon);
+ 
+        JPanel buttonPanel = new JPanel();
+ 
+        JButton quitButton = new JButton("Quit");
+        quitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                exitProcedure();
+            }
+        });
+ 
+        buttonPanel.add(quitButton);
+ 
+        frame.add(panel, BorderLayout.CENTER);
+        frame.add(buttonPanel, BorderLayout.SOUTH);
+ 
+        frame.pack();
+        frame.setLocationByPlatform(true);
+        frame.setVisible(true);
+    }
+ 
+    public void exitProcedure() {
+        frame.dispose();
+        System.exit(0);
+    }
+ 
+    public Image getImage() {
+        Image image = null;
+        try {
+            image = ImageIO.read(getClass()
+                    .getResourceAsStream("/calendar.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return image;
+    }
+ 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new JCalendarTester());
+    }
+ 
+    private class CalendarActionListener implements ActionListener {
+ 
+        private JFrame frame;
+ 
+        private JTextField textField;
+ 
+        public CalendarActionListener(JFrame frame, JTextField textField) {
+            this.frame = frame;
+            this.textField = textField;
+        }
+ 
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            JCalendarDialog dialog = new JCalendarDialog(frame);
+            dialog.addExclusionDateRange(new ExclusionDateRange("M/d/yy",
+                    "2/16/15", "2/16/15"));
+            dialog.setDialogTitle("Appointment Date");
+            dialog.setExclusionDaysOfWeek(Calendar.SATURDAY, Calendar.SUNDAY);
+            dialog.setLocale(Locale.ENGLISH);
+            dialog.createDialog();
+            if (dialog.getReturnCode() == JCalendarDialog.OK_PRESSED) {
+                textField.setText(dialog.getFormattedSelectedDate());
+            }
+        }
+ 
+    }
+}

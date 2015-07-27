@@ -1,0 +1,172 @@
+package timing;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.concurrent.TimeUnit;
+
+public class Przelicznik {
+	public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+	static DateFormat formatyyyyMMdd = new SimpleDateFormat("yyyy/MM/dd");
+	
+	// sprawdzone
+
+	// formatuj milisekundy na format licznikowy z milisekundami
+	static String formatZDziesiatymiSekundy(final long time) {
+		final long hr = TimeUnit.MILLISECONDS.toHours(time);
+		final long min = TimeUnit.MILLISECONDS.toMinutes(time - TimeUnit.HOURS.toMillis(hr));
+		final long sec = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+		final long ms = TimeUnit.MILLISECONDS.toMillis(time - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min) - TimeUnit.SECONDS.toMillis(sec));
+		return String.format("%02d:%02d:%02d.%01d", hr, min, sec, ms / 100);
+	}
+	
+	// formatuj milisekundy na format licznikowy bez milisekund
+	public static String formatZSekundamiStatic(final long time) {
+		final long hr = TimeUnit.MILLISECONDS.toHours(time);
+		final long min = TimeUnit.MILLISECONDS.toMinutes(time - TimeUnit.HOURS.toMillis(hr));
+		final long sec = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+		return String.format("%02d:%02d:%02d", hr, min, sec);
+	}
+	
+	
+	public static double zaokraglijDoPolGodziny(long time) {
+
+		final long hr = TimeUnit.MILLISECONDS.toHours(time);
+		double total = (double) hr;
+
+		final long min = TimeUnit.MILLISECONDS.toMinutes(time - TimeUnit.HOURS.toMillis(hr));
+		final long sec = TimeUnit.MILLISECONDS.toSeconds(time - TimeUnit.HOURS.toMillis(hr) - TimeUnit.MINUTES.toMillis(min));
+
+		long calychMinut = 0;
+		long min2 = min;
+
+		if (sec > 30) {
+			calychMinut = 1;
+			min2 = min2 + calychMinut;
+		}
+
+		double polGodziny = 0;
+
+		// 20 min = 0 h
+		// 30 min = 0,5 h
+		// 50 min = 1 h
+
+		if (min2 >= 25 && min2 <= 45) {
+			polGodziny = 0.5;
+		}
+
+		/*
+		 * else if (min2 > 40 && min2 <=50) {
+		 * 
+		 * polGodziny = 0.75; }
+		 */
+		else if (min2 > 45) {
+			polGodziny = 1;
+		}
+
+		double zaokraglone = total + polGodziny;
+		return zaokraglone;
+	}
+	
+
+	public static long skonwertujStringToLong(String times) {
+		long time = 0;
+		/*
+		 * 1000 = 1 second 60000 = 1 minute 3600000 = 1 hour
+		 */
+		String godzins = times.substring(0, 1);
+		long godzin = Long.valueOf(times.substring(0, 2)).longValue(); 
+		String minuts = times.substring(3, 5);
+		long minut = Long.valueOf(times.substring(3, 5)).longValue();
+		String sekunds = times.substring(6, 8);
+		long sekund = Long.valueOf(times.substring(6, 8)).longValue();
+		time = godzin * 3600000 + minut * 60000 + sekund * 1000;
+		return time;
+	}
+	
+	
+	
+	
+	/*DO PRZEJRZENIA*/
+
+
+	public static long zamienStringNaLiczbeLong(String czas) {
+		// 1800000 = 0.5 hour
+		// 3600000 = 1 hour
+		// 5400000 = 1,5 h
+		// 1800000 = 0.5 hour
+		// 900000 = 0.25 hour = kwadrans
+		long poszukiwanyCzas = 0;
+		long polgodziny = 0;
+		long godziny = 0;
+		int indexUlamka = 0;
+		if (czas.length() == 8) {
+			poszukiwanyCzas = skonwertujStringToLong(czas);
+		}
+
+		else {
+			if (czas.contains(",")) {
+				czas = czas.replace(",", ".");
+			}
+			if (czas.contains(".")) {
+				indexUlamka = czas.indexOf(".");
+				String godzinys = czas.substring(0, indexUlamka);
+				String ulamki = czas.substring(indexUlamka + 1);
+				godziny = Long.parseLong(godzinys) * 3600000;
+
+				if (ulamki != "") {
+					polgodziny = Long.parseLong(ulamki) * 3600000 * 1 / 10;
+				}
+				poszukiwanyCzas = godziny + polgodziny;
+			}
+			else {
+				poszukiwanyCzas = Long.parseLong(czas) * 3600000;
+			}
+		}
+		return poszukiwanyCzas;
+	}
+	
+	
+	public static double zamienCzasWMilisekundachNaDziesietnyDouble(long time) {
+		double suma = 0;
+		double hr = time / 3600000; // w godzinach
+		long reszta = time % 3600000 / 60000; // w minutach
+		double polgodziny = 0;
+
+		if (reszta == 0) {
+			polgodziny = 0;
+		} else {
+			double x = 60 / reszta;
+			double x2 = 100 / x * 0.01;
+			polgodziny = x2;
+		}
+
+		suma = hr + polgodziny;
+		return suma;
+	}
+
+
+	public static String skonwertujDoubleToString(double time) {
+		String times = String.valueOf(time);
+		String ile = times.replace(".", ",");
+		String fin = "";
+		String sub = ile.substring(ile.length() - 1);
+
+		if (sub.equalsIgnoreCase("0")) {
+			fin = ile.substring(0, ile.length() - 2);
+
+		} else {
+			fin = ile;
+		}
+		return fin;
+	}
+/*	
+	public static String zamienWDoublePrzecinekNaKropke(String time) {
+		String timeClean = time.replace(",", ".");
+		return timeClean;	
+	}
+	
+	public static double skonwertujStringToDouble(String time) {
+		double result = Double.parseDouble(zamienWDoublePrzecinekNaKropke(time));
+		return result;
+	}*/
+}

@@ -1,0 +1,18 @@
+Bug1: po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
+w oknie MyFrameStart wyświetla się dzisiejsza lista zadań i dzisiejsze podsumowanie
+(występował już w 6.08, ale wykryłam dopiero w 6.09.
+
+Gdy zakomentuje się ModelZadan.aktualizujListe oraz update podsumowania, wyświetla się dla poprawnej daty
+ale za to bez aktualizacji opisu (dopiero przy ponownym wejściu na datę aktualizacja jest widoczna).
+
+Po dodaniu z palca jest ok.
+SOLVED - to test
+
+
+
+Bug2: po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
+w oknie MyFrameStart wyświetla się dziwaczna łączona lista zadań i dziwaczne łączone podsumowanie.
+
+Może to robi wspólną grupę opisów? bez podziału na dzień i trzeba taki podział dodac?
+
+Bug3: dla zadania z palca pierwszy id to 2
