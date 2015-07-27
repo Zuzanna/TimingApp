@@ -100,7 +100,6 @@ public class Program {
 		String path = tempDir + appNameVersion + "-txtFile";
 		try {
 			File fileDir = new File(path + ".txt");
-
 			Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileDir), "UTF8"));
 			String content = Zadanie.wyswietlPodsumowanieDnia(Zadanie.dzisiejszaData);
 			out.append("STATYSTYKI wygenerowane " + Przelicznik.formatyyyyMMdd.format(new Date())

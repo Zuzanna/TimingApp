@@ -131,19 +131,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	// startZadanie()
 
-/*	public void startZadanie() {
-		MyFrameStart.tPrzebiegZadaniaDisplayArea.setText("");
-		MyFrameStart.otwarteZadanie.startCounter();
-		utworzNoweZadanie();
-		ModelZadan.aktualizujListeZadan(); // dopisuję
-		MyFrameStart.tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia(dzisiejszaData));
-		MyFrameStart.fDataIleWykonanychJuz.setText(MyFrameStart.otwarteZadanie.dayTaskStatusUpdate());
-		MyFrameStart.tPrzebiegZadaniaDisplayArea.setText(MyFrameStart.otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
-		MyFrameStart.ustawPrzyciskiPoStarcie();
-		MyFrameStart.lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday());
-		MyFrameStart.lZadaniaLocal.ensureIndexIsVisible(MyFrameStart.lZadaniaLocal.getSelectedIndex());
-	}*/
-
 	// nadajNazweZadaniu()
 
 	// nadpiszNazweZadania()
@@ -485,15 +472,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		return info;
 	}
 
-	// Wyswietl zadania dzisiejsze
-	/*
-	 * public static String wyswietlZadaniaDzisiejsze() { String info = ""; if
-	 * (wszystkieZadania.isEmpty()) { info += Program.instrukcja(); } else {
-	 * aktualnaData = Przelicznik.formatyyyyMMdd.format(new Date()); for
-	 * (Zadanie z : wszystkieZadania) { if
-	 * (z.dataZadania.equalsIgnoreCase(Zadanie.aktualnaData)) { info +=
-	 * z.toString() + "\n"; } } } return info; }
-	 */
 
 	// updatuj metryczke
 	public String dayTaskStatusUpdate() {
@@ -513,31 +491,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	}
 
 	/* ODTWARZANIE, BACKUP, DODAWANIE RĘCZNIE */
-/*
-	public static Zadanie dodajRecznieZadanie(String dataMoja, int numer, String nowyOpis, String otwarcie, String zamkniecie)
-			throws ParseException {
-		Zadanie noweZadanie = new Zadanie();
-		Zadanie.wszystkieZadania.add(noweZadanie);
 
-		noweZadanie.iDZadania = numer;
-		noweZadanie.dataZadania = dataMoja;
-		noweZadanie.czasRozpoczeciaS = otwarcie;
-		noweZadanie.czasZakonczeniaS = zamkniecie;
-		noweZadanie.taskName = nowyOpis;
-		if (!daty.contains(noweZadanie.dataZadania)) {
-			daty.add(noweZadanie.dataZadania);
-		}
-
-		if (!opisy.contains(noweZadanie.taskName)) {
-			opisy.add(noweZadanie.taskName);
-		}
-		noweZadanie.s3CzasTotalS = noweZadanie.wyliczRecznie(otwarcie, zamkniecie);
-		noweZadanie.s1CzasPauzS = "n.d.";
-		noweZadanie.s1CzasTrwaniaFaktycznyS = "n.d.";
-		noweZadanie.ilePauzZadaniaS = "n.d.";
-		noweZadanie.s1CzasTotalS = "n.d.";
-		return noweZadanie;
-	}*/
 
 	public void zmienDateZadania(int numer, String dataMoja) {
 		for (Zadanie z : wszystkieZadania) {

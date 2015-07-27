@@ -57,20 +57,27 @@ import com.itextpdf.text.DocumentException;
 
 public class MyFrameStart extends JFrame {
 	
-	JDialog d1;
-	final static JButton bOpenDialog = new JButton("Dodaj zadanie z palca");
-	
-	JButton bCalendar = new JButton("Wybierz date");
-	
 	static Zadanie wybraneZadanie = null;	
 	public static String wybranaData = Zadanie.dzisiejszaData;
 	
+	// zegar
+	ClockLabel clock = new ClockLabel();
+	
+	// dodawanie zadania z palca
+	JDialog d1;
+	final static JButton bOpenDialog = new JButton("Dodaj zadanie z palca");
+	
+	// wybór daty
+	JButton bCalendar = new JButton("Wybierz date");
 	public final static JTextField tdateField = new JTextField(12);
 
+	// raporty
 	JButton bSaveToTXT = new JButton("Zapisz jako TXT");
-	// utwórz elementy kluczowe
-
-	ClockLabel clock = new ClockLabel();
+	final static JButton bOpenGeneratePDF = new JButton("Wygeneruj i otwórz raport PDF");
+	
+	
+	
+	// operowanie na zadaniu
 	final static Zadanie otwarteZadanie = new Zadanie();
 	private static final String PlayString = "Play";
 	private static final String PauseString = "Pauza";
@@ -80,29 +87,19 @@ public class MyFrameStart extends JFrame {
 	final static JButton bPauza = new JButton(PauseString);	
 	final static JTextField fOpisZadania = new JTextField(20);	
 
-	final static JButton bOpenGeneratePDF = new JButton("Wygeneruj i otwórz raport PDF");
+
 	final static JTextField fDataIleWykonanychJuz = new JTextField(40);
 	
 	// lista i nawigacja po liscie
 	final static JList lZadaniaLocal = new JList(ModelZadan.listModelZadan);
 	final static JButton bWyswietlMetryczke = new JButton("Wyświetl metryczkę");
 	
-	//final static JButton bChooseDate = new JButton("Wybierz date");
-	
 	// info
 	final static JLabel binPath = new JLabel();
-	final static JLabel  fInfoTxt = new JLabel();
+	final static JLabel fInfoTxt = new JLabel();
 	
 	
-	
-	
-	private static final String WszystkieString = "Wyświetl wszystkie zadania w systemie";
-	private static final String DzisiejszeString = "Wyświetl tylko dzisiejsze zadania";
-	final static JButton bWyswietlZadania = new JButton(WszystkieString);
-
 	final static JTextArea tPrzebiegZadaniaDisplayArea = new JTextArea(5, 50);
-	
-
 	public final static JTextArea tResultDisplay = new JTextArea(20, 50);
 
 
@@ -114,22 +111,14 @@ public class MyFrameStart extends JFrame {
 	
 	
 	public MyFrameStart() {
-		// skonfiguruj frame
 		super(Program.appNameVersion);
 		setDefaultCloseOperation(MyFrameStart.EXIT_ON_CLOSE);
-		
-
 		
 		setSize(700, 650);
 		setLocation(50, 50);
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 		setVisible(true);
-		
-		
-		
 
-
-	
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setViewportView(lZadaniaLocal);
@@ -150,7 +139,6 @@ public class MyFrameStart extends JFrame {
 		add(bPauza);
 		add(otwarteZadanie);
 		add(binPath);
-		//add(fInfoTxt); // dodana wersja
 		add(fDataIleWykonanychJuz);	
 		add(scrollPane);
 		add(bWyswietlMetryczke);
@@ -165,9 +153,7 @@ public class MyFrameStart extends JFrame {
 		String welcomeUser = "Cześć, " + Program.currentUser +"!";
 		
 		if (Program.firstUse) {
-			//JOptionPane.showMessageDialog(null, Program.instrukcja());
 			JOptionPane.showMessageDialog(null, Program.instrukcja(), welcomeUser, JOptionPane.INFORMATION_MESSAGE);
-			//JOptionPane.showMessageDialog(null, Program.instrukcja() "Hi, " + Program.currentUser +"!");
 		}
 		
 		bCalendar.addActionListener(new ActionListener() {
@@ -193,19 +179,7 @@ public class MyFrameStart extends JFrame {
 	            }
 			}
 		});
-		
-/*		bChooseDate.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent zdarz) {
-		
-				EventQueue.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						new FrameCheckOutCalendar();
-					}
-				});
 
-			}
-		});*/
 
 		bSaveToTXT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent zdarz) {
@@ -242,7 +216,6 @@ public class MyFrameStart extends JFrame {
 				tPrzebiegZadaniaDisplayArea.setText("");
 				otwarteZadanie.startCounter();
 				ModelZadan.aktualizujListeZadan(); // dopisuję
-				//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze());
 				tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia(Zadanie.dzisiejszaData));
 				fDataIleWykonanychJuz.setText(otwarteZadanie.dayTaskStatusUpdate());
 				tPrzebiegZadaniaDisplayArea.setText(otwarteZadanie.wyswietlPrzebiegZadaniaMeldunek());
@@ -381,25 +354,7 @@ public class MyFrameStart extends JFrame {
 				bStopStart.setEnabled(true);
 			}
 		});
-		
-		bWyswietlZadania.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String cmd = e.getActionCommand();
-				if (WszystkieString.equals(cmd)) {
-					tResultDisplay.setText(Zadanie.wyswietlZadaniaGrupowanePoDacie());
-					bWyswietlZadania.setText(DzisiejszeString);
-					//ModelZadan.aktualizujListeZadan();
-					ModelZadan.wyswietlListeZadan(wybranaData);
-				} else {
-					ModelZadan.aktualizujListeZadan(); // dopisuję
-					tResultDisplay.setText(Zadanie.wyswietlZadaniaDlaDaty(Zadanie.dzisiejszaData));
-					//ModelZadan.aktualizujListeZadan();
-					ModelZadan.wyswietlListeZadan(wybranaData);
-					bWyswietlZadania.setText(WszystkieString);
-				}
 
-			}
-		});
 		
 		bOpenGeneratePDF.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -429,24 +384,13 @@ public class MyFrameStart extends JFrame {
 	}
 
 	private void createAndShowGUI() {
-/*		setTitle("JDialog Example");
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setLayout(new FlowLayout());*/
 
-		// Must be called before creating JDialog for
-		// the desired effect
 		JDialog.setDefaultLookAndFeelDecorated(true);
 
-		// A perfect constructor, mostly used.
-		// A dialog with current frame as parent
-		// a given title, and modal
 		d1 = new JDialog(this, "Dodaj z palca zadanie", true);
 
-		// Set size
 		d1.setSize(400, 400);
 		d1.setLocation(100, 100);
-
-		// Set some layout
 		d1.setLayout(new FlowLayout());
 		
 		JButton bDodaj = new JButton("Zapisz");
@@ -477,22 +421,12 @@ public class MyFrameStart extends JFrame {
 					ModelZadan.wyswietlListeZadan(wybranaData);
 					d1.dispose();
 				} catch (ParseException | IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
 			}
 		});
-		//Zadanie nowe = new Zadanie("2015-07-23", "Abak", "10:00:00", "12:00:00");
 
-/*		setSize(700, 650);
-		setLocation(50, 50);*/
-/*		setVisible(true);*/
-
-		// Like JFrame, JDialog isn't visible, you'll
-		// have to make it visible
-		// Remember to show JDialog after its parent is
-		// shown so that its parent is visible
 		d1.setVisible(true);
 	}
 	
@@ -527,28 +461,16 @@ public class MyFrameStart extends JFrame {
 		bWyswietlMetryczke.setEnabled(false);
 
 		tResultDisplay.setEditable(false);
-		//tResultDisplay.setText(Zadanie.wyswietlZadaniaDzisiejsze()); // gdy brak zadań w systemie, wyświetla instrukcję
 		tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia(Zadanie.dzisiejszaData));
-		
-		//fInfoTxt.setText("by Zuzanna Malińska, " + Program.wersjaProgramu);
+
 		
 		tdateField.setText(dzisiejszaData); // aby na starcie wyswietlac
-		
-		
-		//add(tPrzebiegZadaniaDisplayArea);
 
-		//add(lZadaniaLocal);
-				
-		//add(tResultDisplay);		
-		//add(bWyswietlZadania);
 		add(bOpenGeneratePDF);
 		add(bSaveToTXT);
 		add(tdateField);
-		//add(bChooseDate);
 		add(bCalendar);
 		add(bOpenDialog);
-/*		
-		lZadaniaLocal.setSelectedIndex(Zadanie.getIleZadanDoneToday());  
-		lZadaniaLocal.ensureIndexIsVisible(lZadaniaLocal.getSelectedIndex());*/
+
 	}
 }
