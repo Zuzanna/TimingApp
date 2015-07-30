@@ -1,4 +1,5 @@
-Bug1: po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
+Bug1: 
+po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
 w oknie MyFrameStart wyświetla się dzisiejsza lista zadań i dzisiejsze podsumowanie
 (występował już w 6.08, ale wykryłam dopiero w 6.09.
 
@@ -10,7 +11,8 @@ SOLVED - to test
 
 
 
-Bug2: po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
+Bug2: 
+po edycji w MyFrameZadanie opisu taska niedzisiejszego i kliknięciu Zapisz
 w oknie MyFrameStart wyświetla się dziwaczna łączona lista zadań i dziwaczne łączone podsumowanie.
 
 Może to robi wspólną grupę opisów? bez podziału na dzień i trzeba taki podział dodac?
