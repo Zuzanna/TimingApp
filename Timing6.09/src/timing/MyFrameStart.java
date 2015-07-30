@@ -176,6 +176,7 @@ public class MyFrameStart extends JFrame {
 
 				createAndShowEditionFrame();
 
+
 /*				EventQueue.invokeLater(new Runnable() {
 
 					@Override
