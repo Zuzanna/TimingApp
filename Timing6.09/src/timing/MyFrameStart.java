@@ -32,7 +32,7 @@ public class MyFrameStart extends JFrame {
 	
 	static int wybranyIndexNaLiscie;
 
-	static Zadanie wybraneZadanie = null;
+	public static Zadanie wybraneZadanie = null;
 	public static String wybranaData = Zadanie.dzisiejszaData;
 	
 	public static String pierwotnyOpis;

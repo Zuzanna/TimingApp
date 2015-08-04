@@ -13,7 +13,7 @@ import javax.swing.JTextField;
 
 public class MyFrameZadanie extends JFrame {
 
-	static Zadanie ogladaneWlasnieZadanie = MyFrameStart.wybraneZadanie;
+	public static Zadanie ogladaneWlasnieZadanie = MyFrameStart.wybraneZadanie;
 	
 	//static String wybranaData = ogladaneWlasnieZadanie.dataZadania;
 	static String wybranaData = MyFrameStart.tdateField.getText();

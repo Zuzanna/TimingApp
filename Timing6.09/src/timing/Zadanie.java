@@ -46,10 +46,10 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	/* ZADANIE STATIKI */
 	static int autoCounter = 1;
-	static Zadanie aktualneZadanie;
+	public static Zadanie aktualneZadanie;
 	static ArrayList<Zadanie> wszystkieZadania = new ArrayList<Zadanie>();
 	static ArrayList daty = new ArrayList<>();
-	static ArrayList opisy = new ArrayList<>();
+	public static ArrayList opisy = new ArrayList<>();
 
 	/* POMOCNICZE */
 
