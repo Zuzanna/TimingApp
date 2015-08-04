@@ -420,7 +420,7 @@ public class MyFrameStart extends JFrame {
 		final JButton bZapisz = new JButton("Zapisz");
 		final JButton bPowrot= new JButton("Powrot");
 
-		//String oldOpis = "";
+
 		final String oldOpis = fOpis.getText();
 
 		fDataZadania.setText(wybraneZadanie.dataZadania);
@@ -434,8 +434,7 @@ public class MyFrameStart extends JFrame {
 		fIlePauzZadania.setText(Integer.toString(wybraneZadanie.ilePauzZadania) ); //SOLVED 2
 		fLacznyCzasPauz.setText(wybraneZadanie.s1CzasPauzS + " | " + wybraneZadanie.s1CzasPauz);
 		fCzasTrwanias3CzasTotalS.setText(wybraneZadanie.s3CzasTotalS + " | " + wybraneZadanie.s3CzasTotal);
-		
-		//oldOpis = fOpis.getText();
+
 		
 		dEdycja.add(lDataZadania);
 		dEdycja.add(fDataZadania);
