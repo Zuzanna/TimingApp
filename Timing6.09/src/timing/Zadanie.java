@@ -100,11 +100,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	
 	/* KONSTRUKTOR DLA ZADAN Z LICZNIKA */
 	public Zadanie() {
-		
-/*		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
-		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
-		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
-		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);*/
 		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
 		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
 		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
@@ -129,8 +124,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		noweZadanie.iDZadania = ileZadanTegoDnia + 1;
 		Zadanie.wszystkieZadania.add(noweZadanie);
 
-		
-		//iDZadania = getIleZadanDoneToday(dataMoja) + 1;
 		noweZadanie.dataZadania = dataMoja;
 		noweZadanie.czasRozpoczeciaS = otwarcie;
 		noweZadanie.czasZakonczeniaS = zamkniecie;
@@ -155,7 +148,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		aktualneZadanie = new Zadanie();
 		aktualneZadanie.absoluteId = autoCounter++;
 		aktualneZadanie.iDZadania = getIleZadanDoneToday(dzisiejszaData) + 1;
-		//setAutoCounter(getIleZadanDoneToday(dzisiejszaData) + 1);
 		aktualneZadanie.dataZadania = Przelicznik.formatyyyyMMdd.format(new Date());
 		wszystkieZadania.add(aktualneZadanie);
 		if (!daty.contains(aktualneZadanie.dataZadania)) {
