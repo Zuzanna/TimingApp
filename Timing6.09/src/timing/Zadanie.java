@@ -56,6 +56,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	/* long nanoStart; */
 
 	/* ZADANIE ATRYBUTY */
+	int absoluteId;
 	int iDZadania;
 	String dataZadania;
 	String taskName = "______";

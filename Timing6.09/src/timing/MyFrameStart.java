@@ -7,6 +7,8 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -264,6 +266,21 @@ public class MyFrameStart extends JFrame {
 
 			}
 
+		});
+		
+		addWindowListener(new WindowAdapter() {
+		    public void windowClosing(WindowEvent e) {
+		        // Do what you want when the window is closing.
+				if (Zadanie.aktualneZadanie != null) {
+					Zadanie.aktualneZadanie.stopCounter();
+				}
+				try {
+					Program.zapiszWszystkoDo();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}	
+		    }
 		});
 
 		bStop.addActionListener(new ActionListener() {
