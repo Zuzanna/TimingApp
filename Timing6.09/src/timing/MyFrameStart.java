@@ -12,7 +12,9 @@ import java.awt.event.WindowEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import javax.swing.JButton;
@@ -58,6 +60,11 @@ public class MyFrameStart extends JFrame {
 	// raporty
 	JButton bSaveToTXT = new JButton("Zapisz jako TXT");
 	final static JButton bOpenGeneratePDF = new JButton("Wygeneruj i otwórz raport PDF");
+	
+	final static JButton bUsun = new JButton("Usuń");
+
+	static List listaSelected;
+
 
 	// operowanie na zadaniu
 	final static Zadanie otwarteZadanie = new Zadanie();
@@ -126,6 +133,7 @@ public class MyFrameStart extends JFrame {
 		add(fDataIleWykonanychJuz);
 		add(scrollPane);
 		add(bWyswietlMetryczke);
+		add(bUsun);
 		add(scrolltxtarea);
 
 		ustawOknoNaStart();
@@ -173,6 +181,78 @@ public class MyFrameStart extends JFrame {
 
 				createAndShowGUI();
 
+			}
+		});
+		
+		bUsun.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent zdarz) {
+				
+				
+				
+/*				System.out.println("bUsun.addActionListener słyszy, że:");
+				
+				ArrayList<Zadanie> wyrzucane = new ArrayList<Zadanie>();
+				listaSelected = lZadaniaLocal.getSelectedValuesList();
+				Zadanie odpowiednik = null;
+				
+				for (Object o : listaSelected){
+					int index = ModelZadan.listModelZadan.indexOf(o);
+					System.out.println("do usunięcia zaznaczony ma indeks: " + index + ", oraz brzmi " +o);
+					
+					for (Zadanie z : Zadanie.wszystkieZadania) {
+						if (z.toString().equalsIgnoreCase(o.toString())) {
+							odpowiednik = z;
+						}
+						
+					}	
+					System.out.println("zaznaczone do usunięcia: "  + odpowiednik);
+					wyrzucane.add(odpowiednik);
+				}
+				
+				String dataUsuwanego = odpowiednik.dataZadania;
+				
+				
+				for (Zadanie pro : wyrzucane) {
+					Zadanie.usunRzecz(pro);
+				}*/
+	
+				
+				
+				System.out.println("bUsun.addActionListener słyszy, że:");
+				
+			
+				Object o = lZadaniaLocal.getSelectedValue();
+				Zadanie odpowiednik = null;
+				
+			
+					int index = ModelZadan.listModelZadan.indexOf(o);
+					System.out.println("do usunięcia zaznaczony ma indeks: " + index + ", oraz brzmi " +o);
+					
+					for (Zadanie z : Zadanie.wszystkieZadania) {
+						if (z.toString().equalsIgnoreCase(o.toString())) {
+							odpowiednik = z;
+						}
+						
+					}
+					
+				
+					System.out.println("zaznaczone do usunięcia: "  + odpowiednik);
+				String dataUsuwanego = odpowiednik.dataZadania;
+
+					Zadanie.usunRzecz(odpowiednik);
+		
+				
+				ModelZadan.wyswietlListeZadan(dataUsuwanego);
+				MyFrameStart.tResultDisplay.setText(Zadanie.wyswietlPodsumowanieDnia(dataUsuwanego));
+				lZadaniaLocal.clearSelection();
+
+				try {
+					Program.zapiszWszystkoDo();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				bUsun.setEnabled(false);
 			}
 		});
 
@@ -379,9 +459,12 @@ public class MyFrameStart extends JFrame {
 
 						System.out.println("obiekt zaznaczony ma indeks: " + wybranyIndex + ", oraz brzmi "
 								+ lZadaniaLocal.getSelectedValue());
+						
+						bUsun.setEnabled(true);
 					}
 					else {
 						bWyswietlMetryczke.setEnabled(false);
+						bUsun.setEnabled(false);
 					}
 				}
 			}
@@ -652,7 +735,7 @@ public class MyFrameStart extends JFrame {
 	private void ustawOknoNaStart() {
 
 		String dzisiejszaData = Przelicznik.formatyyyyMMdd.format(new Date());
-
+		bUsun.setEnabled(false);
 		fOpisZadania.setEnabled(false);
 		bStop.setEnabled(false);
 		bStopStart.setEnabled(false);

@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JLabel;
 
 
+
 public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	public static DateFormat formatyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
@@ -159,6 +160,10 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	// Zamknij bieżace zadanie
 	public static void zamknijBiezaceZadanie() {
 		aktualneZadanie = null;
+	}
+	
+	public static void usunRzecz(Zadanie biezace) {
+		wszystkieZadania.remove(biezace);
 	}
 
 	/* INTERFEJS */
@@ -400,6 +405,32 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 		System.out.println(info);
 		return info;
+	}
+	
+	public static ArrayList<Zadanie> getZadaniaDnia(String data) {
+		
+		ArrayList<Zadanie> zadaniaTegoDnia = null;
+		for (Zadanie z : wszystkieZadania) {
+			if(z.dataZadania.equalsIgnoreCase(data)) {
+				zadaniaTegoDnia.add(z);
+			}
+			
+		}
+		
+		
+		return zadaniaTegoDnia;
+		
+	}
+	
+	public static Zadanie getZadaniePoAbsoluteID(int absolute) {
+		Zadanie poszukiwane = null;
+		for (Zadanie z : wszystkieZadania) {
+			if(z.absoluteId == absolute) {
+				poszukiwane = z;
+			}
+		}
+		return poszukiwane;
+		
 	}
 
 	// Wyswietl podsumowanie dnia z podliczeniem do Redmine dla podanej daty
