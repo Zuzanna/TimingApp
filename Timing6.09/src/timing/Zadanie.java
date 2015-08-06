@@ -100,11 +100,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	
 	/* KONSTRUKTOR DLA ZADAN Z LICZNIKA */
 	public Zadanie() {
-		
-/*		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
-		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
-		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
-		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);*/
 		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
 		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
 		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
@@ -129,8 +124,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		noweZadanie.iDZadania = ileZadanTegoDnia + 1;
 		Zadanie.wszystkieZadania.add(noweZadanie);
 
-		
-		//iDZadania = getIleZadanDoneToday(dataMoja) + 1;
 		noweZadanie.dataZadania = dataMoja;
 		noweZadanie.czasRozpoczeciaS = otwarcie;
 		noweZadanie.czasZakonczeniaS = zamkniecie;
@@ -155,7 +148,6 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		aktualneZadanie = new Zadanie();
 		aktualneZadanie.absoluteId = autoCounter++;
 		aktualneZadanie.iDZadania = getIleZadanDoneToday(dzisiejszaData) + 1;
-		//setAutoCounter(getIleZadanDoneToday(dzisiejszaData) + 1);
 		aktualneZadanie.dataZadania = Przelicznik.formatyyyyMMdd.format(new Date());
 		wszystkieZadania.add(aktualneZadanie);
 		if (!daty.contains(aktualneZadanie.dataZadania)) {
@@ -239,7 +231,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	// s1CzasTrwaniaFaktycznyS - ten jest naliczany do RM
 	// s3CzasTotalS - czas trwania ze sparsowanych dat
 	public String toString() {
-		return dataZadania + " " + " Zadanie " + "# " +absoluteId + "dzienne: "+iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS + " | " + taskName
+		return dataZadania + " " + " Zadanie " + "#" +absoluteId + " dzienne: "+iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS + " | " + taskName
 				+ " | " + s1CzasTrwaniaFaktycznyS + " | " + s1CzasTotalS + " | " + "Pauz: " + s1CzasPauzS;
 	}
 
@@ -456,7 +448,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 				info += daty.get(i).toString() + "\n";
 				for (Zadanie z : wszystkieZadania) {
 					if (z.dataZadania.equalsIgnoreCase(daty.get(i).toString()) && (z != aktualneZadanie)) {
-						grupaZDnia += "Zadanie " + "# " + z.absoluteId + "dzienne: "+ z.iDZadania + " | " + z.czasRozpoczeciaS + "-" + z.czasZakonczeniaS + " | "
+						grupaZDnia += "Zadanie " + "#" + z.absoluteId + " dzienne: "+ z.iDZadania + " | " + z.czasRozpoczeciaS + "-" + z.czasZakonczeniaS + " | "
 								+ z.taskName + " | " + z.wyliczCzasZadaniaDoRedmine() + "\n";
 						sumaGodzinDnia += Przelicznik.skonwertujStringToLong(z.wyliczCzasZadaniaDoRedmine());
 					}
