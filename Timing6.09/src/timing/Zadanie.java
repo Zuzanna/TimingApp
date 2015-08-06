@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.swing.JLabel;
 
+
 public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	public static DateFormat formatyyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
@@ -46,6 +47,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	/* ZADANIE STATIKI */
 	static int autoCounter = 1;
+
 	public static Zadanie aktualneZadanie;
 	static ArrayList<Zadanie> wszystkieZadania = new ArrayList<Zadanie>();
 	static ArrayList daty = new ArrayList<>();
@@ -94,21 +96,41 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	Date dataSpauzowania; // wyliczanie pauzy
 	Date dataOdpauzowania; // wyliczanie pauzy
 
+	
+	
 	/* KONSTRUKTOR DLA ZADAN Z LICZNIKA */
 	public Zadanie() {
+		
+/*		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
+		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
+		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
+		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);*/
 		licznikBiezacy = System.currentTimeMillis() - initTimeLicznika;
 		licznikFormatMilisekund = "" + (System.currentTimeMillis() - initTimeLicznika);
 		licznikFormatZegarowy = Przelicznik.formatZDziesiatymiSekundy(System.currentTimeMillis() - initTimeLicznika);
+		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);
 		setText(licznikFormatZegarowy + "  |  " + licznikFormatMilisekund);
 	}
 
 	/* KONSTRUKTOR DLA ZADAN Z PALCA */
 	public Zadanie(String dataMoja, String nowyOpis, String otwarcie, String zamkniecie) throws ParseException,
 			FileNotFoundException, IOException {
+		super();
 		Zadanie noweZadanie = new Zadanie();
+
+		noweZadanie.absoluteId = autoCounter++;
+		int ileZadanTegoDnia = 0;
+		
+		for (Zadanie z : wszystkieZadania) {
+			if (z.dataZadania.equalsIgnoreCase(dataMoja)) {
+				ileZadanTegoDnia++;
+			}
+		}
+		noweZadanie.iDZadania = ileZadanTegoDnia + 1;
 		Zadanie.wszystkieZadania.add(noweZadanie);
 
-		noweZadanie.iDZadania = getAutoCounter() + 1;
+		
+		//iDZadania = getIleZadanDoneToday(dataMoja) + 1;
 		noweZadanie.dataZadania = dataMoja;
 		noweZadanie.czasRozpoczeciaS = otwarcie;
 		noweZadanie.czasZakonczeniaS = zamkniecie;
@@ -126,6 +148,25 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		noweZadanie.ilePauzZadaniaS = "n.d.";
 		noweZadanie.s1CzasTotalS = "n.d.";
 		Program.zapiszWszystkoDo();
+	}
+	
+	// Utworz nowe zadanie
+	public static Zadanie utworzNoweZadanie() {
+		aktualneZadanie = new Zadanie();
+		aktualneZadanie.absoluteId = autoCounter++;
+		aktualneZadanie.iDZadania = getIleZadanDoneToday(dzisiejszaData) + 1;
+		//setAutoCounter(getIleZadanDoneToday(dzisiejszaData) + 1);
+		aktualneZadanie.dataZadania = Przelicznik.formatyyyyMMdd.format(new Date());
+		wszystkieZadania.add(aktualneZadanie);
+		if (!daty.contains(aktualneZadanie.dataZadania)) {
+			daty.add(aktualneZadanie.dataZadania);
+		}
+		return aktualneZadanie;
+	}
+
+	// Zamknij bieżace zadanie
+	public static void zamknijBiezaceZadanie() {
+		aktualneZadanie = null;
 	}
 
 	/* INTERFEJS */
@@ -146,23 +187,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 
 	/* LOGIKA BIZNESOWA */
 
-	// Utworz nowe zadanie
-	public static Zadanie utworzNoweZadanie() {
-		aktualneZadanie = new Zadanie();
-		aktualneZadanie.iDZadania = getIleZadanDoneToday(dzisiejszaData) + 1;
-		setAutoCounter(getIleZadanDoneToday(dzisiejszaData) + 1);
-		aktualneZadanie.dataZadania = Przelicznik.formatyyyyMMdd.format(new Date());
-		wszystkieZadania.add(aktualneZadanie);
-		if (!daty.contains(aktualneZadanie.dataZadania)) {
-			daty.add(aktualneZadanie.dataZadania);
-		}
-		return aktualneZadanie;
-	}
 
-	// Zamknij bieżace zadanie
-	public static void zamknijBiezaceZadanie() {
-		aktualneZadanie = null;
-	}
 
 	// Wylicz, ile zadan wykonano tego dnia
 	public static int getIleZadanDoneToday(String data) {
@@ -214,7 +239,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 	// s1CzasTrwaniaFaktycznyS - ten jest naliczany do RM
 	// s3CzasTotalS - czas trwania ze sparsowanych dat
 	public String toString() {
-		return dataZadania + " " + " Zadanie " + iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS + " | " + taskName
+		return dataZadania + " " + " Zadanie " + "# " +absoluteId + "dzienne: "+iDZadania + " | " + czasRozpoczeciaS + "-" + czasZakonczeniaS + " | " + taskName
 				+ " | " + s1CzasTrwaniaFaktycznyS + " | " + s1CzasTotalS + " | " + "Pauz: " + s1CzasPauzS;
 	}
 
@@ -431,7 +456,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 				info += daty.get(i).toString() + "\n";
 				for (Zadanie z : wszystkieZadania) {
 					if (z.dataZadania.equalsIgnoreCase(daty.get(i).toString()) && (z != aktualneZadanie)) {
-						grupaZDnia += "Zadanie " + z.iDZadania + " | " + z.czasRozpoczeciaS + "-" + z.czasZakonczeniaS + " | "
+						grupaZDnia += "Zadanie " + "# " + z.absoluteId + "dzienne: "+ z.iDZadania + " | " + z.czasRozpoczeciaS + "-" + z.czasZakonczeniaS + " | "
 								+ z.taskName + " | " + z.wyliczCzasZadaniaDoRedmine() + "\n";
 						sumaGodzinDnia += Przelicznik.skonwertujStringToLong(z.wyliczCzasZadaniaDoRedmine());
 					}
@@ -545,8 +570,8 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		return autoCounter;
 	}
 
-	public static void setAutoCounter(int autoCounter) {
-		autoCounter = autoCounter;
+	public static void setAutocounter(int autocounter) {
+		Zadanie.autoCounter = autocounter;
 	}
 
 	public static void pokazEkstensje() throws FileNotFoundException, IOException, ClassNotFoundException {
@@ -566,7 +591,7 @@ public class Zadanie extends JLabel implements ActionListener, Serializable {
 		daty = (ArrayList) in.readObject();
 		opisy = (ArrayList) in.readObject();
 		int numer = in.readInt();
-		setAutoCounter(numer);
+		Zadanie.setAutocounter(numer);
 	}
 
 	public static void zapiszEkstensje(ObjectOutputStream out) throws IOException {
